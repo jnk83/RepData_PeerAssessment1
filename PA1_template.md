@@ -5,19 +5,50 @@ output:
     keep_md: true
 ---
 
-```{r setup}
+
+```r
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Loading and preprocessing the data
 
-```{r}
 
+```r
 ## LIBRARIES
 
 library(dplyr)
-library(ggplot2)
+```
 
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
+library(ggplot2)
+```
+
+```
+## Registered S3 methods overwritten by 'ggplot2':
+##   method         from 
+##   [.quosures     rlang
+##   c.quosures     rlang
+##   print.quosures rlang
+```
+
+```r
 ## READ DATA
 
 data <- read.csv(unz("activity.zip", "activity.csv"))
@@ -27,13 +58,12 @@ data <- read.csv(unz("activity.zip", "activity.csv"))
 data <- data %>% select(date, interval, steps)
 
 data$date <- as.Date(data$date, "%Y-%m-%d")
-
 ```
 
 ## What is mean total number of steps taken per day?
 
-```{r}
 
+```r
 ## Creates step sums for intervals and removes NA's
 
 sum_data <- aggregate(steps ~ date,
@@ -50,20 +80,28 @@ hist(sum_data$stepsPerDay,
      ylab = "Number of Days",
      main = "Frequency of Total Steps over Time",
      breaks = 8)
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
 ## Calculate mean and median and print result
 
 partone <- sum_data %>% summarize(mean = mean(stepsPerDay), median = median(stepsPerDay))
 print(partone)
+```
 
+```
+##       mean median
+## 1 10766.19  10765
 ```
 
 Mean and Median values are **10766.19** and **10765** respectively.
 
 ## What is the average daily activity pattern?
 
-```{r}
 
+```r
 ## 
 
 intervalData <- data %>%
@@ -75,24 +113,35 @@ ggplot(intervalData, aes(x = interval, y = avgIntervalSteps)) +
         ggtitle("Time Series: Average Daily Activity Pattern") +
         xlab("Interval") +
         ylab("Average Steps")
-
 ```
 
-```{r}
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+
+```r
 print(intervalData$interval[which.max(intervalData$avgIntervalSteps)])
+```
+
+```
+## [1] 835
 ```
 The interval with the maximum value of average steps is **835**.
 
 ## Imputing missing values
 
-```{r}
+
+```r
 sum(is.na(data))
+```
+
+```
+## [1] 2304
 ```
 The number of missing value in this data set is **2304**.
 
 The strategy is to replace NA values with the median value for the 5 minute intervals in question.
-```{r}
 
+```r
 imputedSteps <- ifelse(is.na(data$steps),
                       ave(data$steps,
                           data$interval,
@@ -110,11 +159,21 @@ hist(imputedSums$stepsPerDay,
      ylab = "Number of Days",
      main = "Frequency of Total Steps over Time with Imputed Values",
      breaks = 8)
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+```r
 imputedPart <- imputedSums %>% summarize(altMean = mean(stepsPerDay), altMedian = median(stepsPerDay))
 
 print(imputedPart)
+```
 
+```
+## # A tibble: 1 x 2
+##   altMean altMedian
+##     <dbl>     <int>
+## 1   9504.     10395
 ```
 
 **Original:**  
@@ -129,8 +188,8 @@ print(imputedPart)
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
 
+```r
 dayType <- weekdays(imputedData$date, abbreviate = TRUE)
 dayType <- factor(dayType,
                   levels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"),
@@ -149,3 +208,5 @@ ggplot(dayData, aes(x = interval, y = avgIntervalSteps)) +
         xlab("Interval") +
         ylab("Average Steps")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
